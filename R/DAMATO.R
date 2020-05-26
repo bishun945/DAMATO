@@ -18,13 +18,18 @@ Check_spread_file <- function(fn){
 
 #' @name Check_sheet_name
 #' @title Check the format of sheet names of the spread
+#' 
 #' @importFrom stringr str_detect
 #' @importFrom cli cat_bullet
 #' @importFrom readxl excel_sheets read_excel
+#' @importFrom magrittr %>%
+#' @importFrom stringi stri_escape_unicode
+#' 
 #' @param fn fn
 #' @param dataset_format dataset_format (default as 1)
 #' @return List
 #' @export
+#' @encoding UTF-8
 #' 
 Check_sheet_name <- function(fn, dataset_format = 1){
   
@@ -39,9 +44,11 @@ Check_sheet_name <- function(fn, dataset_format = 1){
   cat_bullet("Following sheets are found: ", paste(Sheets_found, collapse = " "), bullet = 'heart', bullet_col = "blue")
   
   if(dataset_format == 1){
-    Sheets_required <- c("基本参数","1.Rrs","2.ap","3.aph","4.anap","5.aCDOM","6.apc")
+    Sheets_required <- c(stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570"),"1.Rrs","2.ap","3.aph","4.anap","5.aCDOM","6.apc")
     general_name    <- c("base","Rrs","ap","aph","anap","aCDOM","apc")
   }
+  
+  # showNonASCIIfile(file = './R/DAMATO.R')
   
   Sheets_used <- NULL
   
@@ -113,12 +120,17 @@ Check_sheet_name <- function(fn, dataset_format = 1){
 
 #' @name Check_sample_id
 #' @title Check the format of sample ids of the spread
+#' 
 #' @importFrom cli cat_bullet
-#' @importFrom stringr str_detect str_match
+#' @importFrom stringr str_detect str_match str_c
+#' @importFrom stringi stri_unescape_unicode
+#' 
 #' @param input input
 #' @param dataset_format dataset_format (default as 1)
 #' @return List
+#' 
 #' @export
+#' @encoding UTF-8
 #' 
 Check_sample_id <- function(input, dataset_format = 1){
   
@@ -143,9 +155,10 @@ Check_sample_id <- function(input, dataset_format = 1){
     
     dt_sub <- dt[[name]]
     
-    if(name == general_name[1] | name == '基本参数'){                   # for base sheet
+    if(name == general_name[1] | name == stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570")){   # for base sheet
       
-      w <- str_detect(names(dt_sub), '编号|通用|SampleID') %>% which()
+      pattern <- str_c(stri_unescape_unicode("\\u7f16\\u53f7"),"|",stri_unescape_unicode("\\u901a\\u7528"),"|SampleID") #Bianhao | Tongyong
+      w <- str_detect(names(dt_sub), pattern) %>% which()
       if(sum(w) == 1){
         list_sample_id[[name]] <- dt_sub[, w] %>% as.matrix %>% c
         cat_bullet("'SampleID' found in [", name, "]", bullet = "tick", bullet_col = "green")
@@ -156,14 +169,17 @@ Check_sample_id <- function(input, dataset_format = 1){
       
     }else{                                                              # for following sheets
       
-      if(!all(str_detect(names(dt_sub), '编号|通用|SampleID'))){
+      if(!all(str_detect(names(dt_sub), pattern))){
         cat_bullet("'SampleID' CANNOT be found in [", name, 
                    "]. The first colname is used here. Recommand to change '", names(dt_sub)[1], "' as 'SampleID'.", 
                    bullet = 'bullet', bullet_col = "yellow")
         num_wr = num_wr + 1
       }
       
-      wrong_pattern <- '备注|Note|note|\\[|\\]|\\{|\\}|\\(|\\)|（|）|-'
+      wrong_pattern <- str_c(stri_unescape_unicode("\\u5907\\u6ce8"),
+                             '|Note|note|\\[|\\]|\\{|\\}|\\(|\\)|',
+                             stri_unescape_unicode("\\uff08"),'|',
+                             stri_unescape_unicode("\\uff08"),'|-')
       
       if(any(str_detect(names(dt_sub)[-1], wrong_pattern))){
         cat_bullet("Found '", 
@@ -172,7 +188,7 @@ Check_sample_id <- function(input, dataset_format = 1){
                    "] with the wrong format 'YYYYMMXXNN_Z'. They have been removed. Please check and re-submit!",
                    bullet = "cross", bullet_col = 'red')
         num_er = num_er + 1
-        w <- which(str_detect(names(dt_sub), '备注|Note|note'))
+        w <- which(str_detect(names(dt_sub), str_c(stri_unescape_unicode("\\u5907\\u6ce8"),'|Note|note')))
         list_sample_id[[name]] <- names(dt_sub)[c(-1, -w)]
       }else{
         list_sample_id[[name]] <- names(dt_sub)[-1]
@@ -260,16 +276,8 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
              bullet = "heart", bullet_col = "blue")
   
   if(dataset_format == 1){
-    base_colnames_CN <- c('通用编号','测量日期','测量时间','经度','纬度','采水深度',
-                          '是否垂向','天气状况','云量状况','大气能见度','风向','pH','Eh','DO',
-                          '海拔','气压','空气温度','相对湿度','风速','水深','水温','水表温','透明度',
-                          '叶绿素a','藻蓝蛋白','总藻毒素','胞外藻毒素','胞内藻毒素','颗粒有机碳','溶解有机碳','总悬浮物','无机悬浮物',
-                          '有机悬浮物','总氮','总磷','溶解总氮','溶解总磷','光合有效辐射','周围情况描述','备注')
-    base_colnames_EN <- c('SampleID','Date','Time','LON','LAT','Depth',
-                          'IfVertial','Weather','Cloudiness','Visibility','Wind_Dir.','pH','Eh','DO',
-                          'Altitude','Air_Pres.','Air_Temp.','R.H.','Wind_Spe.','Bathymetry','Water_Body_Temp.','Water_Surf._Temp.','SSD',
-                          'Chla','PC','TMC','EMC','IMC','POC','DOC','TSM','ISM',
-                          'OSM','TN','TP','TDN','TDP','PAR','Ambient_description','Notes')
+    base_colnames_CN <- dataset_format_1$base_info[,"base_colnames_CN"]
+    base_colnames_EN <- dataset_format_1$base_info[,"base_colnames_EN"]
   }
   
   cat_bullet("Formatted colnames (CN): ", paste(base_colnames_CN, collapse = ", "), 
@@ -349,9 +357,14 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
 
 #' @name Check_geo_location
 #' @title Check the geo-location through heatmap
+#' 
 #' @import leaflet
 #' @import htmltools
 #' @importFrom cli cat_bullet
+#' @importFrom stats median
+#' @importFrom magrittr %<>%
+#' @importFrom htmlwidgets saveWidget
+#' 
 #' @param input input
 #' @return List
 #' @export
@@ -371,7 +384,7 @@ Check_geo_location <- function(input){
   w <- which(dt_base$Depth == 0)
   df <- data.frame(name=dt_base$SampleID[w],
                    lon=dt_base$LON[w], 
-                   lat=dt_base$LAT[w]) %>% .level_to_variable()
+                   lat=dt_base$LAT[w]) %>% level_to_variable()
   for(i in 2:3) df[,i] <- as.numeric(df[,i])
   
   m = leaflet(df) %>% addTiles()
@@ -410,14 +423,18 @@ Check_geo_location <- function(input){
 
 #' @name Check_param_quality
 #' @title Check the quality of parameters
+#' 
 #' @importFrom cli cat_bullet
 #' @import htmltools
 #' @import plotly
+#' 
 #' @param input input
 #' @return List
 #' @export
 #' 
 Check_param_quality <- function(input){
+  
+  return(NULL)
   
 }
 
@@ -425,14 +442,18 @@ Check_param_quality <- function(input){
 
 #' @name Check_spectra_quality
 #' @title Check the quality of spectra
+#' 
 #' @importFrom cli cat_bullet
 #' @import htmltools
 #' @import plotly
+#' 
 #' @param input input
-#' @return 
+#' @return List
 #' @export
 #' 
 Check_spectra_quality <- function(input){
+  
+  return(NULL)
   
 }
 
@@ -627,8 +648,6 @@ Generate_ref_spread <- function(dataset_format = 1,
 }
 
 
-
-
 # files <- lapply(list.files(system.file('extdata', package = 'DAMATO'), full.names = TRUE), read.csv)
 
 
@@ -636,4 +655,33 @@ Generate_ref_spread <- function(dataset_format = 1,
 #' @name dataset_format_1
 #' @title Format_1 used for generating reference spreads
 #' @docType data
+#' @usage dataset_format_1
+#' @encoding UTF-8
 NULL
+
+
+
+#' @name level_to_variable
+#' @noRd
+level_to_variable <- function(dt, warn=F){
+  if(!is.data.frame(dt))
+    stop('Input must be a data.frame')
+  w <- NULL
+  for(i in names(dt)){w<-c(w,is.factor(dt[,i]))}
+  if(sum(w) != 0){
+    for(i in names(dt)[w]){
+      tmp <- levels(dt[,i])[dt[,i]]
+      dt[,i] <- tmp
+    }
+    if(warn) message('Factors turned to variables are: ')
+    if(warn) message(paste(names(dt)[w],collapse=' '))
+    return(dt)
+  }else{
+    if(warn) message('No factor in this data.frame.')
+    return(dt)
+  }
+}
+
+
+utils::globalVariables(c('.', 'dataset_format_1'))
+                         

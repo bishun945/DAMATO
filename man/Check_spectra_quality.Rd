@@ -10,7 +10,7 @@ Check_spectra_quality(input)
 \item{input}{input}
 }
 \value{
-
+List
 }
 \description{
 Check the quality of spectra

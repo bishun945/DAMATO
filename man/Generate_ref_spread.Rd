@@ -10,7 +10,8 @@ Generate_ref_spread(
   use_CN = TRUE,
   QF_sheet = FALSE,
   Meta_sheet = TRUE,
-  add_demo = TRUE
+  add_demo = TRUE,
+  add_unit = TRUE
 )
 }
 \arguments{
@@ -24,7 +25,9 @@ Generate_ref_spread(
 
 \item{Meta_sheet}{Metadata info sheets (default as \code{TRUE})}
 
-\item{add_demo}{Add demo samples}
+\item{add_demo}{Add demo samples (TRUE)}
+
+\item{add_unit}{Add unit (TRUE)}
 }
 \value{
 List
