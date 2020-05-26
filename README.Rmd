@@ -16,8 +16,9 @@ knitr::opts_chunk$set(
 # DAMATO
 
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.com/bishun945/DAMATO.svg?branch=master)](https://travis-ci.com/bishun945/DAMATO)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/bishun945/DAMATO?branch=master&svg=true)](https://ci.appveyor.com/project/bishun945/DAMATO)
+[![Travis build status](https://travis-ci.com/bishun945/DAMATO.svg?token=ekKczQU5ZnxJHkx55qWv&branch=master)](https://travis-ci.com/bishun945/DAMATO)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/ka7a4j64v11xhive?svg=true)](https://ci.appveyor.com/project/bishun945/damato)
+[![CircleCI](https://circleci.com/gh/bishun945/DAMATO/tree/circleci-project-setup.svg?style=svg&circle-token=0e261ccfcb5335a249044d86bab7569c0131db7e)](https://circleci.com/gh/bishun945/DAMATO/tree/circleci-project-setup)
 <!-- badges: end -->
 
 The goal of `DAMATO` is to automatically assess the MS spreadsheets recording in situ data by:
