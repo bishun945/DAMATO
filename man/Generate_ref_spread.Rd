@@ -4,12 +4,27 @@
 \alias{Generate_ref_spread}
 \title{Generate spreads of the built-in format (recommand)}
 \usage{
-Generate_ref_spread(dataset_format = 1, file_format = "xlsx")
+Generate_ref_spread(
+  dataset_format = 1,
+  file_format = "xlsx",
+  use_CN = TRUE,
+  QF_sheet = FALSE,
+  Meta_sheet = TRUE,
+  add_demo = TRUE
+)
 }
 \arguments{
 \item{dataset_format}{dataset_format (default as 1)}
 
 \item{file_format}{file_format (default as 'xlsx')}
+
+\item{use_CN}{Use CN colnames (default as \code{TRUE})}
+
+\item{QF_sheet}{Qualtiy Flag sheets (default as \code{FALSE})}
+
+\item{Meta_sheet}{Metadata info sheets (default as \code{TRUE})}
+
+\item{add_demo}{Add demo samples}
 }
 \value{
 List

@@ -20,6 +20,7 @@ Check_spread_file <- function(fn){
 #' @title Check the format of sheet names of the spread
 #' @importFrom stringr str_detect
 #' @importFrom cli cat_bullet
+#' @importFrom readxl excel_sheets read_excel
 #' @param fn fn
 #' @param dataset_format dataset_format (default as 1)
 #' @return List
@@ -268,7 +269,7 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
                           'IfVertial','Weather','Cloudiness','Visibility','Wind_Dir.','pH','Eh','DO',
                           'Altitude','Air_Pres.','Air_Temp.','R.H.','Wind_Spe.','Bathymetry','Water_Body_Temp.','Water_Surf._Temp.','SSD',
                           'Chla','PC','TMC','EMC','IMC','POC','DOC','TSM','ISM',
-                          'OSM','TN','TP','DTN','DTP','PAR','Surroundings','Notes')
+                          'OSM','TN','TP','TDN','TDP','PAR','Ambient_description','Notes')
   }
   
   cat_bullet("Formatted colnames (CN): ", paste(base_colnames_CN, collapse = ", "), 
@@ -442,12 +443,197 @@ Check_spectra_quality <- function(input){
 #' @import openxlsx
 #' @param dataset_format dataset_format (default as 1)
 #' @param file_format file_format (default as 'xlsx')
+#' @param use_CN Use CN colnames (default as \code{TRUE})
+#' @param QF_sheet Qualtiy Flag sheets (default as \code{FALSE})
+#' @param Meta_sheet Metadata info sheets (default as \code{TRUE})
+#' @param add_demo Add demo samples (TRUE)
+#' @param add_unit Add unit (TRUE)
 #' @return List 
 #' @export
-Generate_ref_spread <- function(dataset_format = 1, file_format = "xlsx"){
+#' 
+#' @importFrom cli cat_bullet
+Generate_ref_spread <- function(dataset_format = 1, 
+                                file_format = "xlsx", 
+                                use_CN = TRUE,
+                                QF_sheet = FALSE, 
+                                Meta_sheet = TRUE,
+                                add_demo = TRUE,
+                                add_unit = TRUE){
   
   # openxlsx package used here to specify cell range
+  
+  options("openxlsx.dateFormat" = "YYYY-mm-dd")
+  options("openxlsx.datetimeFormat" = "YYYY-mm-dd")
+  
+  wb <- createWorkbook()
+  
+  modifyBaseFont(wb, fontSize = 12, fontName = "Arial")
+  
+  if(dataset_format == 1){
+    # data("dataset_format_1")
+    sheetnames = dataset_format_1$sheets_info[,"Sheets_required"]
+    if(QF_sheet) sheetnames <- c("QF", sheetnames)
+    if(Meta_sheet) sheetnames <- c("Meta", sheetnames)
+    demo_samples <- dataset_format_1$demo_samples
+    if(use_CN){
+      base_colnames <- dataset_format_1$base_info[,c("base_colnames_CN","base_unit_CN")]
+    }else{
+      base_colnames <- dataset_format_1$base_info[,c("base_colnames_EN","base_unit_EN")]
+    }
+    base_colnames <- str_c(base_colnames[,1], base_colnames[,2])
+    colnames(demo_samples) <- base_colnames
+    Sample_head <- str_c(format(Sys.Date(),"%Y%m"),"XXX")
+    SampleID <- paste0(Sample_head, demo_samples[,1])
+    demo_samples[,1] <- SampleID
+    fn_output <- sprintf("%sDataCollection_v1.0.%s", Sample_head, file_format)
+    cat_bullet("The output filename is ", fn_output, bullet = 'heart', bullet_col = "blue")
+  }
+  
+  # build ms style
+  headstyle <- createStyle(textDecoration = "bold", fgFill = "#EBF1DE")
+  SampleIDstyle <- createStyle(textDecoration = "bold", fgFill = "#FDE9D9")
+  
+  # generage demo Spectra
+  wv <- seq(350, 800, 50)
+  demo_spectra <- matrix(data = rep(0.857,length(wv)*length(SampleID)),
+                         ncol = length(SampleID),
+                         nrow = length(wv))
+  demo_spectra <- data.frame(wv=wv, demo_spectra)
+  colnames(demo_spectra) <- c(base_colnames[1], SampleID)
+  
+  # add worksheet
+  for(sheet in sheetnames){
+    addWorksheet(wb, sheet)
+    cat_bullet("Added sheet ", sheet, " to ", fn_output, bullet = 'heart', bullet_col = "blue")
+  }
+  
+  # add and write Meta info
+  if(Meta_sheet){
+    pkg_version <- gsub("Version: ","",readLines('DESCRIPTION')[stringr::str_which(readLines('DESCRIPTION'), 'Version')])
+    pkg_version <- str_c("DAMATO v", pkg_version, "by Shun Bi")
+    dt_meta <- data.frame(
+      Item = c("Filename","Data_Collect_Date","File_Create_Date","Maintainer(s)","Package_Version","Notes"),
+      Content = c(fn_output,"YYYY-MM-DD",as.character(Sys.Date()),"Add your name(s)",pkg_version,"Add notes here.")
+    )
+    writeData(wb, sheet = "Meta", x = dt_meta,
+              startRow = 1, startCol = "A",
+              borders = "surrounding")
+    addStyle(wb, 
+             sheet = "Meta",
+             style = headstyle,
+             gridExpand = TRUE,
+             cols = 1:ncol(dt_meta),
+             rows = 1)
+    cat_bullet("Added meta info to sheet Meta", bullet = 'heart', bullet_col = "blue")
+    
+    dt_version <- data.frame(
+      Date = c(as.character(Sys.Date()),"",""),
+      Version = c("1.0","",""),
+      Modifiers = c("Add name(s) who modified the spreadsheet in that version.","",""),
+      Change_details = c("What are news in this version? Note that all previous version records should be listed above the current one.","","")
+    )
+    writeData(wb, sheet = "Meta", x = dt_version, 
+              startRow = {nrow(dt_meta) + 4}, startCol = "A",
+              borders = "surrounding")
+    addStyle(wb, 
+             sheet = "Meta",
+             style = headstyle,
+             gridExpand = TRUE,
+             cols = 1:ncol(dt_version),
+             rows = {nrow(dt_meta) + 4})
+    setColWidths(wb, sheet = "Meta", cols = 1:3, widths = "auto")
+    cat_bullet("Added version record to sheet Meta", bullet = 'heart', bullet_col = "blue")
+  }
+  
+  if(add_demo == FALSE){
+    
+  }
+
+  # write demos to the sheet base
+  writeData(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
+            x = demo_samples,
+            borders = "surrounding")
+  addStyle(wb, 
+           sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
+           style = headstyle,
+           gridExpand = TRUE,
+           cols = 1:ncol(demo_samples),
+           rows = 1)
+  setColWidths(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
+               cols = 1:ncol(demo_samples), widths = "auto")
+  cat_bullet("Added demo samples to sheet ", dataset_format_1$sheets_info[,"Sheets_required"][1], 
+             bullet = 'heart', bullet_col = "blue")
+  
+  # write Rrs data to sheet 1.Rrs
+  writeData(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][2],
+            x = demo_spectra[, c(1,which(demo_samples[,6] == 0) + 1)],
+            borders = "surrounding")
+  setColWidths(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][2],
+               cols = 1:ncol(demo_spectra[, c(1,which(demo_samples[,6] == 0) + 1)]),
+               widths = "auto")
+  addStyle(wb,
+           sheet = dataset_format_1$sheets_info[,"Sheets_required"][2],
+           style = SampleIDstyle,
+           cols = 2:ncol(demo_spectra[, c(1,which(demo_samples[,6] == 0) + 1)]),
+           rows = 1)
+  cat_bullet("Added demo spectra to sheet ", dataset_format_1$sheets_info[,"Sheets_required"][2], 
+             bullet = 'heart', bullet_col = "blue")
+  
+  # write Rrs data to 
+  if(dataset_format == 1){
+    for(sheet in dataset_format_1$sheets_info[,"Sheets_required"][-c(1,2)]){
+      
+      writeData(wb, sheet = sheet,
+                x = demo_spectra,
+                borders = "surrounding")
+      setColWidths(wb, sheet = sheet,
+                   cols = 1:ncol(demo_spectra),
+                   widths = "auto")
+      addStyle(wb,
+               sheet = sheet,
+               style = SampleIDstyle,
+               cols = 2:ncol(demo_spectra),
+               rows = 1)
+      cat_bullet("Added demo spectra to sheet ", sheet, 
+                 bullet = 'heart', bullet_col = "blue")
+      
+    }
+  }
+  
+  # Add unit
+  if(add_unit){
+    addWorksheet(wb, 'unit')
+    writeData(wb,
+              sheet = 'unit',
+              x = dataset_format_1$base_info,
+              borders = "surrounding")
+    setColWidths(wb, sheet = "unit", cols = 1:ncol(dataset_format_1$base_info), widths = "auto")
+    addStyle(wb, sheet = "unit", style = headstyle, cols = 1:ncol(dataset_format_1$base_info), rows = 1)
+    cat_bullet("Added the unit sheet", 
+               bullet = 'heart', bullet_col = "blue")
+  }
+  
+  if(!dir.exists("spreads")){
+    dir.create("spreads")
+    cat_bullet("No 'spreads' fold found, create sucessfully", bullet = 'heart', bullet_col = "blue")
+  }
+  
+  saveWorkbook(wb, file = file.path("spreads", fn_output), overwrite = TRUE)
+  
+  cat_bullet("Okay! The spreadsheet is sucessfully generated!", bullet = "tick", bullet_col = "green")
+  
+  return( file.path("spreads", fn_output) )
   
 }
 
 
+
+
+# files <- lapply(list.files(system.file('extdata', package = 'DAMATO'), full.names = TRUE), read.csv)
+
+
+
+#' @name dataset_format_1
+#' @title Format_1 used for generating reference spreads
+#' @docType data
+NULL
