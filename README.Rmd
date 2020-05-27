@@ -29,7 +29,7 @@ The goal of `DAMATO` is to automatically assess the MS spreadsheets recording in
   * **Generate a skeleton** by the pre-defined spreadsheet format (easy to use when start to data collection);
   * **Produce assessment figures** includes parameters comparison, relationships between AOPs (or IOPs) and OACs, geolocation map and so on.
   
-The present built-in spreadsheet format only supports the lab of Prof. Yunmei Li in Nanjing Normal University. If you want to customize the spreadsheet format, you can consult Prof. Li for more details via liyunmei@njnu.edu.cn and cc to bishun1994@foxmail.
+The present built-in spreadsheet format only supports the lab of Prof. Yunmei Li in Nanjing Normal University. If you want to customize the spreadsheet format, you can consult Prof. Li for more details via liyunmei@njnu.edu.cn and cc to bishun1994@foxmail.com.
 
 ## Installation
 

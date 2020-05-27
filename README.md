@@ -28,7 +28,7 @@ recording in situ data by:
 The present built-in spreadsheet format only supports the lab of
 Prof. Yunmei Li in Nanjing Normal University. If you want to customize
 the spreadsheet format, you can consult Prof. Li for more details via
-<liyunmei@njnu.edu.cn> and cc to <bishun1994@foxmail>.
+<liyunmei@njnu.edu.cn> and cc to <bishun1994@foxmail.com>.
 
 ## Installation
 
