@@ -3,6 +3,8 @@
 
 # DAMATO
 
+Current version: 0.0.4
+
 <!-- badges: start -->
 
 [![Travis build
@@ -56,6 +58,6 @@ res_1 = Check_sheet_name(fn)
 res_2 = Check_sample_id(res_1)
 res_3 = Check_base_info(res_2)
 res_4 = Check_geo_location(res_3)
-res_5 = Check_param_quality(res_4)
-res_6 = Check_spectra_quality(res_5)
+res_5 = Check_param_quality(res_4) # coming soon
+res_6 = Check_spectra_quality(res_5) # coming soon
 ```

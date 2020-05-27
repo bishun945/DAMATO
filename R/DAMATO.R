@@ -590,7 +590,7 @@ Generate_ref_spread <- function(dataset_format = 1,
   # add and write Meta info
   if(Meta_sheet){
     pkg_version <- gsub("Version: ","",readLines('DESCRIPTION')[stringr::str_which(readLines('DESCRIPTION'), 'Version')])
-    pkg_version <- str_c("DAMATO v", pkg_version, "by Shun Bi")
+    pkg_version <- str_c("DAMATO v", pkg_version, " by Shun Bi")
     dt_meta <- data.frame(
       Item = c("Filename","Data_Collect_Date","File_Create_Date","Maintainer(s)","Package_Version","Notes"),
       Content = c(fn_output,"YYYY-MM-DD",as.character(Sys.Date()),"Add your name(s)",pkg_version,"Add notes here.")
