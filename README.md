@@ -44,5 +44,18 @@ This is a basic example which shows you how to use `DAMATO`:
 
 ``` r
 library(DAMATO)
-## basic example code
+
+# If you are getting start to data collection, use generage function like this:
+Generate_ref_spread()
+# Then a MS spreadsheet file will be created in fold 'spreads', just add your records to this file.
+
+
+# Once you finish your collection, use Check functions to make sure the format is okay.
+fn  = file.choose() # select your spreadsheet file
+res_1 = Check_sheet_name(fn)
+res_2 = Check_sample_id(res_1)
+res_3 = Check_base_info(res_2)
+res_4 = Check_geo_location(res_3)
+res_5 = Check_param_quality(res_4)
+res_6 = Check_spectra_quality(res_5)
 ```

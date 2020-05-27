@@ -36,7 +36,12 @@ dataset_format_1$base_info <- cbind(
 
 dataset_format_1$sheets_info <- cbind(
   Sheets_required = c('基本参数', '1.Rrs', '2.ap', '3.aph', '4.anap', '5.aCDOM', '6.apc'),
-  general_name    = c('base', 'Rrs', 'ap', 'aph', 'anap', 'aCDOM', 'apc')
+  general_name    = c('base', 'Rrs', 'ap', 'aph', 'anap', 'aCDOM', 'apc'),
+  general_name_CN = c('基本参数', '遥感反射率', '总颗粒物吸收系数', '色素颗粒物吸收系数',
+                      '非色素颗粒物吸收系数', '有色可溶性有机物吸收系数', '藻蓝蛋白吸收系数'),
+  unit            = c('', '[sr^-1]', '[m^-1]', '[m^-1]', '[m^-1]', '[m^-1]', '[m^-1]'),
+  general_name_long = c('base', 'Remote sensening Reflectance', 'Total particle absorption', 'Phytoplankton particle absorption',
+                        'Non-phytoplankton particle absorption', 'CDOM absorption', 'Phycocyanin absorption')
 )
 
 today <- as.character(Sys.Date())
@@ -64,7 +69,7 @@ demo_samples <- data.frame(
   `水温[℃]` = c('15', 'NA', 'NA', '15', 'NA', 'NA', '15', '15') ,
   `水表温[℃]` = c('14', 'NA', 'NA', '14', 'NA', 'NA', '14', '14') ,
   `透明度[m]` = c('0.5', 'NA', 'NA', '0.5', 'NA', 'NA', '0.5', '0.5') ,
-  `叶绿素a[μg/L]` = round(runif(8,0,10),2) ,
+  `叶绿素a[μg/L]` = 10^runif(8, 1, 2) %>% round(2) ,
   `藻蓝蛋白[μg/L]` = round(runif(8,0,10),2) ,
   `总藻毒素[ug/L]` = round(runif(8,0,10),2) ,
   `胞外藻毒素[ug/L]` = round(runif(8,0,10),2) ,

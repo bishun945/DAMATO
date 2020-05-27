@@ -457,6 +457,53 @@ Check_spectra_quality <- function(input){
   
 }
 
+#' @name build_spectra
+#' @title Randomly build spectra for Rrs, aph, anap and aCDOM
+#' @param Chla Chla concentration. If NULL then randomly produce one.
+#' @param adg400 adg at 400 nm. If NULL then randomly produce one.
+#' @importFrom stats runif
+#' @noRd
+#' 
+build_spectra <- function(Chla = NULL, adg400 = NULL){
+  
+  wv = c(404, 412, 442, 490, 510, 560, 620, 666, 674, 681, 708,
+         754, 761, 764, 768, 779)
+  dt_aphs = c(0.1766, 0.1814, 0.169, 0.1246, 0.1088, 0.0791,
+              0.0776, 0.0834, 0.0902, 0.0873, 0.0472, 0.0313,
+              0.0302, 0.0298, 0.0294, 0.0279)
+  dt_aw = c(0.0062, 0.0045, 0.0068, 0.015, 0.0325, 0.0619, 
+            0.2755, 0.4314, 0.4459, 0.4688, 0.817, 2.7808, 
+            2.6701, 2.6114, 2.5303, 2.3324)
+  percent_anap <- c(0.78, 0.78, 0.81, 0.81, 0.81, 0.79, 0.83, 
+                    0.93, 0.91, 0.93, 0.88, 0.47, 0.47, 0.46, 0.45, 0.43)
+  S_adg = -0.0035
+  
+  Chla = ifelse(is.null(Chla), 10^runif(1, -0.070, 2.564), Chla)
+  adg400 = ifelse(is.null(adg400), 10^runif(1, 0.296, 1.171), adg400)
+  
+  aph = dt_aphs * Chla
+  adg = adg400 * exp(S_adg*wv)
+  anap= adg * percent_anap
+  aCDOM=adg-anap
+  
+  a <- dt_aw + adg + aph
+  bb = 5 * exp(-0.0035*wv)
+  
+  rrs = 0.089*(bb/(a+bb)) + 0.125*(bb/(a+bb))^2
+  Rrs = 0.52*rrs / (1-1.7*rrs)
+  Rrs = round(Rrs, 4)
+  
+  result <- list(Chla=Chla, 
+                 adg400=adg400, 
+                 Rrs=Rrs,
+                 ap=aph+anap,
+                 aph=aph,
+                 anap=anap,
+                 aCDOM=aCDOM)
+  
+  return(result)
+}
+
 
 
 #' @name Generate_ref_spread
@@ -464,6 +511,7 @@ Check_spectra_quality <- function(input){
 #' @import openxlsx
 #' @param dataset_format dataset_format (default as 1)
 #' @param file_format file_format (default as 'xlsx')
+#' @param overwrite Default as \code{FALSE}, just in case you forget to copy demo spread to other folders.
 #' @param use_CN Use CN colnames (default as \code{TRUE})
 #' @param QF_sheet Qualtiy Flag sheets (default as \code{FALSE})
 #' @param Meta_sheet Metadata info sheets (default as \code{TRUE})
@@ -473,8 +521,11 @@ Check_spectra_quality <- function(input){
 #' @export
 #' 
 #' @importFrom cli cat_bullet
+#' @importFrom stringr str_sub
+#' 
 Generate_ref_spread <- function(dataset_format = 1, 
                                 file_format = "xlsx", 
+                                overwrite = FALSE,
                                 use_CN = TRUE,
                                 QF_sheet = FALSE, 
                                 Meta_sheet = TRUE,
@@ -512,15 +563,23 @@ Generate_ref_spread <- function(dataset_format = 1,
   
   # build ms style
   headstyle <- createStyle(textDecoration = "bold", fgFill = "#EBF1DE")
-  SampleIDstyle <- createStyle(textDecoration = "bold", fgFill = "#FDE9D9")
+  fgFills <- c("#FDE9D9","#DAEEF3","#E4DFEC","#F2DCDB","#DCE6F1","#C5D9F1","#DDD9C4","#D9D9D9")
+  SampleIDstyle <- createStyle(textDecoration = "bold", fgFill = sample(fgFills, 1))
   
   # generage demo Spectra
-  wv <- seq(350, 800, 50)
-  demo_spectra <- matrix(data = rep(0.857,length(wv)*length(SampleID)),
-                         ncol = length(SampleID),
-                         nrow = length(wv))
-  demo_spectra <- data.frame(wv=wv, demo_spectra)
-  colnames(demo_spectra) <- c(base_colnames[1], SampleID)
+  build_demo_spectra <- function(x){
+    wv <- c(404, 412, 442, 490, 510, 560, 620, 666, 674, 681, 708,
+            754, 761, 764, 768, 779)
+    demo_spectra <- matrix(data = rep(NA,length(wv)*length(SampleID)),
+                           ncol = length(SampleID),
+                           nrow = length(wv))
+    for(i in 1:ncol(demo_spectra)){
+      demo_spectra[,i] = build_spectra(Chla=demo_samples[i,24])[[x]]
+    }
+    demo_spectra <- data.frame(wv=wv, demo_spectra)
+    colnames(demo_spectra) <- c(base_colnames[1], SampleID)
+    return(demo_spectra)
+  }
   
   # add worksheet
   for(sheet in sheetnames){
@@ -542,7 +601,7 @@ Generate_ref_spread <- function(dataset_format = 1,
     addStyle(wb, 
              sheet = "Meta",
              style = headstyle,
-             gridExpand = TRUE,
+             gridExpand = TRUE, stack = TRUE,
              cols = 1:ncol(dt_meta),
              rows = 1)
     cat_bullet("Added meta info to sheet Meta", bullet = 'heart', bullet_col = "blue")
@@ -559,17 +618,13 @@ Generate_ref_spread <- function(dataset_format = 1,
     addStyle(wb, 
              sheet = "Meta",
              style = headstyle,
-             gridExpand = TRUE,
+             gridExpand = TRUE, stack = TRUE,
              cols = 1:ncol(dt_version),
              rows = {nrow(dt_meta) + 4})
     setColWidths(wb, sheet = "Meta", cols = 1:3, widths = "auto")
     cat_bullet("Added version record to sheet Meta", bullet = 'heart', bullet_col = "blue")
   }
   
-  if(add_demo == FALSE){
-    
-  }
-
   # write demos to the sheet base
   writeData(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
             x = demo_samples,
@@ -577,15 +632,22 @@ Generate_ref_spread <- function(dataset_format = 1,
   addStyle(wb, 
            sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
            style = headstyle,
-           gridExpand = TRUE,
+           gridExpand = TRUE, stack = TRUE,
            cols = 1:ncol(demo_samples),
            rows = 1)
+  addStyle(wb, 
+           sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
+           style = SampleIDstyle,
+           gridExpand = TRUE, stack = TRUE,
+           cols = 1,
+           rows = (1:nrow(demo_samples))+1)
   setColWidths(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][1],
                cols = 1:ncol(demo_samples), widths = "auto")
   cat_bullet("Added demo samples to sheet ", dataset_format_1$sheets_info[,"Sheets_required"][1], 
              bullet = 'heart', bullet_col = "blue")
   
   # write Rrs data to sheet 1.Rrs
+  demo_spectra = build_demo_spectra("Rrs")
   writeData(wb, sheet = dataset_format_1$sheets_info[,"Sheets_required"][2],
             x = demo_spectra[, c(1,which(demo_samples[,6] == 0) + 1)],
             borders = "surrounding")
@@ -594,16 +656,21 @@ Generate_ref_spread <- function(dataset_format = 1,
                widths = "auto")
   addStyle(wb,
            sheet = dataset_format_1$sheets_info[,"Sheets_required"][2],
-           style = SampleIDstyle,
+           style = SampleIDstyle, stack = TRUE,
            cols = 2:ncol(demo_spectra[, c(1,which(demo_samples[,6] == 0) + 1)]),
            rows = 1)
-  cat_bullet("Added demo spectra to sheet ", dataset_format_1$sheets_info[,"Sheets_required"][2], 
+  cat_bullet("Added demo spectra (surface only) to sheet ", dataset_format_1$sheets_info[,"Sheets_required"][2], 
              bullet = 'heart', bullet_col = "blue")
   
-  # write Rrs data to 
+  # write absorption data to sheets
   if(dataset_format == 1){
     for(sheet in dataset_format_1$sheets_info[,"Sheets_required"][-c(1,2)]){
-      
+      x = str_sub(sheet,3)
+      if(x == "apc"){
+        demo_spectra = build_demo_spectra("aph") # use aph to replace apc
+      }else{
+        demo_spectra = build_demo_spectra(x)
+      }
       writeData(wb, sheet = sheet,
                 x = demo_spectra,
                 borders = "surrounding")
@@ -612,13 +679,17 @@ Generate_ref_spread <- function(dataset_format = 1,
                    widths = "auto")
       addStyle(wb,
                sheet = sheet,
-               style = SampleIDstyle,
+               style = SampleIDstyle, stack = TRUE,
                cols = 2:ncol(demo_spectra),
                rows = 1)
       cat_bullet("Added demo spectra to sheet ", sheet, 
                  bullet = 'heart', bullet_col = "blue")
       
     }
+  }
+  
+  if(add_demo == FALSE){
+    
   }
   
   # Add unit
@@ -629,17 +700,32 @@ Generate_ref_spread <- function(dataset_format = 1,
               x = dataset_format_1$base_info,
               borders = "surrounding")
     setColWidths(wb, sheet = "unit", cols = 1:ncol(dataset_format_1$base_info), widths = "auto")
-    addStyle(wb, sheet = "unit", style = headstyle, cols = 1:ncol(dataset_format_1$base_info), rows = 1)
+    addStyle(wb, sheet = "unit", style = headstyle, stack = TRUE,
+             cols = 1:ncol(dataset_format_1$base_info), rows = 1)
+    
+    if(dataset_format == 1){
+      unit_spec = dataset_format_1$sheets_info
+    }
+    writeData(wb,
+              sheet = 'unit',
+              x = unit_spec,
+              startCol = 1, startRow = nrow(dataset_format_1$base_info) + 5, 
+              borders = "surrounding")
+    setColWidths(wb, sheet = "unit", cols = 1:ncol(unit_spec), widths = "auto")
+    addStyle(wb, sheet = "unit", style = headstyle,  stack = TRUE,
+             cols = 1:ncol(unit_spec), rows = nrow(dataset_format_1$base_info) + 5)
+    
     cat_bullet("Added the unit sheet", 
                bullet = 'heart', bullet_col = "blue")
   }
   
+  # save spread
   if(!dir.exists("spreads")){
     dir.create("spreads")
     cat_bullet("No 'spreads' fold found, create sucessfully", bullet = 'heart', bullet_col = "blue")
   }
   
-  saveWorkbook(wb, file = file.path("spreads", fn_output), overwrite = TRUE)
+  saveWorkbook(wb, file = file.path("spreads", fn_output), overwrite = overwrite)
   
   cat_bullet("Okay! The spreadsheet is sucessfully generated!", bullet = "tick", bullet_col = "green")
   
@@ -649,7 +735,6 @@ Generate_ref_spread <- function(dataset_format = 1,
 
 
 # files <- lapply(list.files(system.file('extdata', package = 'DAMATO'), full.names = TRUE), read.csv)
-
 
 
 #' @name dataset_format_1
