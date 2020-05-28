@@ -46,6 +46,7 @@ Check_sheet_name <- function(fn, dataset_format = 1){
   if(dataset_format == 1){
     Sheets_required <- c(stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570"),"1.Rrs","2.ap","3.aph","4.anap","5.aCDOM","6.apc")
     general_name    <- c("base","Rrs","ap","aph","anap","aCDOM","apc")
+    base_colnames_type <- dataset_format_1$base_info[,"base_colnames_type"]
   }
   
   # showNonASCIIfile(file = './R/DAMATO.R')
@@ -73,6 +74,13 @@ Check_sheet_name <- function(fn, dataset_format = 1){
              paste(Sheets_used, collapse = " "), bullet = 'heart', bullet_col = "blue")
   
   dt <- list()
+  # for(Sheet in Sheets_used){
+  #   if(Sheet == stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570") | Sheet == "base"){
+  #     dt[[Sheet]] <- read_excel(fn, sheet=Sheet, col_types = base_colnames_type)
+  #   }else{
+  #     dt[[Sheet]] <- read_excel(fn, sheet=Sheet, col_types = "numeric")
+  #   }
+  # }
   for(Sheet in Sheets_used){
     dt[[Sheet]] <- read_excel(fn, sheet=Sheet)
   }
@@ -127,12 +135,13 @@ Check_sheet_name <- function(fn, dataset_format = 1){
 #' 
 #' @param input input
 #' @param dataset_format dataset_format (default as 1)
+#' @param fix_Rrs_sample_id fix_Rrs_sample_id (default as \code{TRUE})
 #' @return List
 #' 
 #' @export
 #' @encoding UTF-8
 #' 
-Check_sample_id <- function(input, dataset_format = 1){
+Check_sample_id <- function(input, dataset_format = 1, fix_Rrs_sample_id = TRUE){
   
   # sample id should be checked into twp parts
   # 1) generally, the number of samples should follow some rules;
@@ -212,6 +221,32 @@ Check_sample_id <- function(input, dataset_format = 1){
     sample_id_full <- list_sample_id[[which.max(length_sample_id)]]
   }
   
+  # The sample id definition of base and Rrs is a kind of different. Have to check.
+  w = which(!(list_sample_id$Rrs %in% list_sample_id$base))
+  if(length(w) != 0){
+    cat_bullet("In Rrs sheet, there found sample id(s) are different from the base: ", paste(list_sample_id$Rrs[w], collapse = " "),
+               bullet = "cross", bullet_col = "red")
+    for(i in 1:length(w)){
+      w_maybe = which(str_detect(list_sample_id$base, str_c(list_sample_id$Rrs[w][i],"_1")))
+      if(length(w_maybe) == 0){
+        cat_bullet("No.", i, " Cannot find matched '", list_sample_id$Rrs[w][i], "' from the base sample id!",
+                   bullet = "radio_on", bullet_col = "pink", col = 'pink')
+        stop("Check process exist!")
+      }else{
+        cat_bullet("No.", i, " Is '", list_sample_id$Rrs[w][i], "'matched with '",
+                   paste(list_sample_id$base[w_maybe], collapse = ", ") ,"' from the base sample id?",
+                   bullet = "radio_on", bullet_col = "pink", col = 'pink')
+        if(fix_Rrs_sample_id & length(w_maybe) == 1){
+          colnames(dt$Rrs)[-1][w][i] <- str_c(list_sample_id$Rrs[w][i],"_1") # replace the former one
+          cat_bullet("Automatically modified as ", str_c(list_sample_id$Rrs[w][i],"_1"), bullet = 'heart', bullet_col = 'blue')
+        }else{
+          stop("Check process exist!")
+        }
+      }
+    }
+  }
+  
+  # Detect whether the input spread satisfy the format of the required.
   for(i in names(length_sample_id)[!{names(length_sample_id) %in% c("base","Rrs")}]){
     sample_missing <- sample_id_full %in% list_sample_id[[i]] %>% {!.} %>% sample_id_full[.] %>%
       paste0(., collapse = ", ")
@@ -238,6 +273,7 @@ Check_sample_id <- function(input, dataset_format = 1){
   
   result <- input
   result$Status_sample_id = Status
+  result$dt = dt
   
   return(result)
   
@@ -248,6 +284,7 @@ Check_sample_id <- function(input, dataset_format = 1){
 #' @name Check_base_info
 #' @title Check the format of sheet 'base'
 #' @importFrom cli cat_bullet
+#' @importFrom readxl excel_sheets
 #' @import stringr
 #' @import stringi
 #' @import dplyr
@@ -278,6 +315,7 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
   if(dataset_format == 1){
     base_colnames_CN <- dataset_format_1$base_info[,"base_colnames_CN"]
     base_colnames_EN <- dataset_format_1$base_info[,"base_colnames_EN"]
+    base_colnames_type = dataset_format_1$base_info[,"base_colnames_type"]
   }
   
   cat_bullet("Formatted colnames (CN): ", paste(base_colnames_CN, collapse = ", "), 
@@ -285,6 +323,19 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
   
   cat_bullet("Formatted colnames (EN): ", paste(base_colnames_EN, collapse = ", "),  
              bullet = "heart", bullet_col = "blue", col = "blue")
+  
+  # The function will detect the out-formatted columns in the raw spread and stop checking
+  # The user requires to inspect these columns manually.
+  if(length(name) > length(base_colnames_CN)){
+    w = ((str_to_lower(name) %in% str_to_lower(base_colnames_CN)) | (str_to_lower(name) %in% str_to_lower(base_colnames_EN)))
+    w = which(!w)
+    cat_bullet(paste(name[w], collapse = ", "), " found in the current spread. ",
+               "They are not required colnames. If you want to save them, just keep them into the column Note. ",
+               "Or if you confirm these parameters as the often-used. Please contact me to modify the code. ", 
+               "Now please check and re-submit!",
+               bullet = "cross", bullet_col = 'red')
+    stop("Exit check process!")
+  }
   
   w = which(!{{str_to_lower(base_colnames_CN) %in% str_to_lower(name)} | {str_to_lower(base_colnames_EN) %in% str_to_lower(name)}})
   
@@ -335,6 +386,22 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
   Status <- ifelse(num_er == 0, "Pass", "Error")
   col    <- ifelse(num_er == 0, {ifelse(num_wr == 0, "steelblue", "yellow")}, "red")
   
+  # If base info check pass, the base data should be re-read as the col_types should be defined again.
+  if(Status == "Pass"){
+    Sheets = excel_sheets(input$fn)
+    w_sheet = which(Sheets == stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570") | Sheets == "base")
+    dt_base <- read_excel(input$fn, sheet=w_sheet, 
+                          cell_cols(w_sort),
+                          col_types = base_colnames_type)[, w_sort]
+    if(as_EN_colnames){
+      names(dt_base) <- base_colnames_EN
+      cat("  Colnames of [base] are converted to EN characters.\n")
+    }else{
+      names(dt_base) <- base_colnames_CN
+      cat("  Colnames of [base] are converted to CN characters.\n")
+    }
+  }
+  
   cat_bullet("--- Base info check finished ! --- Status: [", Status,"] --- ",
              "Error number: [", num_er, 
              "] --- Warning number: [", num_wr, "]",
@@ -353,7 +420,67 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
   
 }
 
+#' @name Check_format
+#' @title Main function to check spread format using Check_sheet_name, Check_sample_id,
+#'   and Check_base_info.
+#' 
+#' @param fn Filename
+#' @return A list
+#' @export
+#' 
+#' @importFrom cli cat_boxx
+#' 
+Check_format <- function(fn,
+                         dataset_format = 1,
+                         as_EN_colnames = TRUE){
+  
+  cat_boxx("Format check begin!")
+  res_1 = Check_sheet_name(fn, dataset_format = dataset_format)
+  cat_boxx("Check_sheet_name() finished!")
+  res_2 = Check_sample_id(res_1, dataset_format = dataset_format)
+  cat_boxx("Check_sample_id() finished!")
+  res_3 = Check_base_info(res_2, dataset_format = dataset_format, as_EN_colnames = as_EN_colnames)
+  cat_boxx("Check_base_info() finished!")
+  
+  return(res_3)
+  
+}
 
+#' @name Transpose_spec_df
+#' @title Transpose the spectra data as a data.frame with wavelength being colnames
+#' @param input Result of Check_base_info
+#' @param dataset_format Dataset_format (default as 1)
+#' @return A list or NULL (error output)
+#' @export
+
+Transpose_spec_df <- function(input, dataset_format = 1){
+  
+  if(input$Status_sheet_name == "Pass" &
+     input$Status_sample_id == "Pass" &
+     input$Status_base_info == "Pass"){
+    
+    if(dataset_format == 1){
+      dt = input$dt
+      for(i in 2:7){
+        tmp = t(dt[[i]])[-1,]
+        colnames(tmp) = t(dt[[i]])[1,]
+        tmp = data.frame(SampleID = colnames(dt[[i]])[-1], tmp)
+        rownames(tmp) = seq(1, nrow(tmp))
+        colnames(tmp)[-1] = gsub("X","",colnames(tmp)[-1])
+        dt[[i]] = tmp
+      }
+      input$dt = dt
+    }
+    
+    return(input)
+    
+  }else{
+    
+    stop("Please pass sheet_name, sample_id, and base_info check!")
+    return(NULL)
+    
+  }
+}
 
 #' @name Check_geo_location
 #' @title Check the geo-location through heatmap
