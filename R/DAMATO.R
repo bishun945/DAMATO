@@ -400,10 +400,11 @@ Check_geo_location <- function(input){
   fn_map <- "Geolocation.html"
   saveWidget(m, file=fn_map)
   if(!dir.exists('html_widgets')) dir.create('html_widgets')
-  a = file.copy(fn_map, 'html_widgets')
+  a = file.copy(fn_map, 'html_widgets', overwrite = TRUE)
   a = file.remove(fn_map)
   fn_map_ <- file.path('html_widgets', 
                       paste(str_remove(basename(input$fn), '\\..{3,4}$'), basename(fn_map), sep = "_"))
+  a = file.rename("./html_widgets/Geolocation.html", fn_map_)
   
   cat_bullet("The html map was saved to: ", fn_map_, " Please inspect it visually!",
              bullet = 'heart', bullet_col = 'blue')
