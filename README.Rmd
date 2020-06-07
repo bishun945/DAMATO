@@ -43,24 +43,42 @@ install.packages("devtools") # install devtools require
 devtools::install_github('DAMATO', build_vignettes=TRUE)
 ```
 
-## Example
+## Supported spread formats
 
-This is a basic example which shows you how to use `DAMATO`:
+run `data(DAMATO::dataset_format_1)` to see more details about one of supported formats.
+
+## Format check
+
+If you are getting start to data collection, use generage function like this:
 
 ```{r example, eval=FALSE, include=TRUE}
 library(DAMATO)
-
-# If you are getting start to data collection, use generage function like this:
 Generate_ref_spread()
-# Then a MS spreadsheet file will be created in fold 'spreads', just add your records to this file.
+```
 
+Then a MS spreadsheet file will be created in fold `spreads` in your working directory. Just add your records to this file. Once you finish your collection, use `Check functions` to make sure the format is okay.
 
-# Once you finish your collection, use Check functions to make sure the format is okay.
+```{r eval = FALSE}
+
 fn  = file.choose() # select your spreadsheet file
 res_1 = Check_sheet_name(fn)
 res_2 = Check_sample_id(res_1)
 res_3 = Check_base_info(res_2)
 res_4 = Check_geo_location(res_3)
+```
+
+The above `Check functions` are merged to one main funciton which could be more convenient for users. But it is okay if you want to check a specific item, such as `sheet name` or `sample id`.
+
+```{r eval = FALSE}
+res = Check_format(fn)
+```
+
+## Quatliy check (coming soon)
+
+When all format stuff are passed, the more important thing is to check the quality of data set you collect. Use `Check_param_quality()` and `Check_spectra_quality()` to inspect (interactively to some extent) the quality and flag them by `qualtiy_flag()`.
+
+```{r eval = FALSE}
 res_5 = Check_param_quality(res_4) # coming soon
 res_6 = Check_spectra_quality(res_5) # coming soon
+res_7 = Quatliy_flag(res_6) # coming soon
 ```
