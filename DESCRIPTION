@@ -1,7 +1,7 @@
 Package: DAMATO
 Type: Package
 Title: Data Management Tools
-Version: 0.0.5
+Version: 0.0.6
 Authors@R: c(person("Shun", "Bi", ,"bishun1994@foxmail.com", c("aut","cre")))
 Author: Shun Bi [aut, cre]
 Maintainer: Shun Bi <bishun1994@foxmail.com>
@@ -27,4 +27,4 @@ Suggests:
 Encoding: UTF-8
 LazyData: yes
 VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
