@@ -58,7 +58,7 @@ Check_sheet_name <- function(fn, dataset_format = 1){
   for(Sheet in Sheets_required){
     w <- str_detect(Sheets_found, Sheet)
     if(!any(w)){
-      cli_contro("error", c("[", Sheet, "] does not detected!"))
+      cli_control("error", c("[", Sheet, "] does not detected!"))
       num_er = num_er + 1
       next
     }
@@ -305,13 +305,13 @@ Check_sample_id <- function(input, dataset_format = 1, fix_Rrs_sample_id = TRUE)
 #' @name Check_base_info
 #' @title Check the format of sheet 'base'
 #' @importFrom cli cat_bullet
-#' @importFrom readxl excel_sheets
+#' @importFrom readxl excel_sheets cell_cols
 #' @import stringr
 #' @import stringi
 #' @import dplyr
 #' @param input input
 #' @param dataset_format dataset_format (default as 1)
-#' @param as_EN_colnames Convert colnames to EN format (default as TRUE)
+#' @param as_EN_colnames Convert colnames to EN format (default as \code{TRUE})
 #' @return List
 #' @export
 #' 
@@ -455,6 +455,8 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
 #'   and Check_base_info.
 #' 
 #' @param fn Filename
+#' @param dataset_format The format of dataset to be checked.
+#' @param as_EN_colnames Convert colnames to EN format (default as \code{TRUE})
 #' @return A list
 #' @export
 #' 

@@ -11,7 +11,7 @@ Check_base_info(input, dataset_format = 1, as_EN_colnames = TRUE)
 
 \item{dataset_format}{dataset_format (default as 1)}
 
-\item{as_EN_colnames}{Convert colnames to EN format (default as TRUE)}
+\item{as_EN_colnames}{Convert colnames to EN format (default as \code{TRUE})}
 }
 \value{
 List

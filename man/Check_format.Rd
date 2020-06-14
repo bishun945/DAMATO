@@ -9,6 +9,10 @@ Check_format(fn, dataset_format = 1, as_EN_colnames = TRUE)
 }
 \arguments{
 \item{fn}{Filename}
+
+\item{dataset_format}{The format of dataset to be checked.}
+
+\item{as_EN_colnames}{Convert colnames to EN format (default as \code{TRUE})}
 }
 \value{
 A list

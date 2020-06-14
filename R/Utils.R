@@ -1,4 +1,4 @@
-utils::globalVariables(c('.', 'dataset_format_1'))
+utils::globalVariables(c('.', 'dataset_format_1', 'dataset_format_1_folders'))
 
 #' @name Transpose_spec_df
 #' @title Transpose the spectra data as a data.frame with wavelength being colnames

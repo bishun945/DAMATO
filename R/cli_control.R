@@ -6,7 +6,7 @@
 #' @param text The character to print
 #' @param col_status The status color for pos = end
 #'  
-#' @importFrom cli rule symbol cat_bullet
+#' @import cli
 #' @importFrom utils packageVersion
 #' @importFrom magrittr %>%
 #' 
