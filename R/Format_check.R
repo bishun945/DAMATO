@@ -99,7 +99,7 @@ Check_sheet_name <- function(fn, dataset_format = 1){
     cli_control("warning",
                 c("We found carriage return or newline in the sheet [base]: ",
                   paste(names(dt[['base']])[which(str_detect(old_name ,"\\r\\n"))], collapse = " ")))
-    cli_control("warning", "Fully recomand to use only one line character to describe colnames in [base].")
+    cli_control("warning", "Fully recommand to use only one line character to describe colnames in [base].")
     cli_control("warning", "Anyway, the carriage return or newline symbols are removed in this process!")
 
     num_wr = num_wr + 1
