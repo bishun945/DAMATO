@@ -1,9 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DAMATO
+# DAMATO <img src='man/figures/logo.png' align="right" height="139" />
 
-Current version: 0.0.5
+Current version: 0.0.7
 
 <!-- badges: start -->
 
@@ -23,11 +23,11 @@ binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/bishun9
 The goal of `DAMATO` is to automatically assess the MS spreadsheets
 recording in situ data by:
 
-  - **Format check** includes sheetname check, sampleID check, base info
+-   **Format check** includes sheetname check, sampleID check, base info
     check, etc.;
-  - **Generate a skeleton** by the pre-defined spreadsheet format (easy
+-   **Generate a skeleton** by the pre-defined spreadsheet format (easy
     to use when start to data collection);
-  - **Produce assessment figures** includes parameters comparison,
+-   **Produce assessment figures** includes parameters comparison,
     relationships between AOPs (or IOPs) and OACs, geolocation map and
     so on.
 
@@ -66,7 +66,6 @@ working directory. Just add your records to this file. Once you finish
 your collection, use `Check functions` to make sure the format is okay.
 
 ``` r
-
 fn  = file.choose() # select your spreadsheet file
 res_1 = Check_sheet_name(fn)
 res_2 = Check_sample_id(res_1)
