@@ -34,7 +34,7 @@ recording in situ data by:
 The present built-in spreadsheet format only supports the lab of
 Prof. Yunmei Li in Nanjing Normal University. If you want to customize
 the spreadsheet format, you can consult Prof. Li for more details via
-<liyunmei@njnu.edu.cn> and cc to <bishun1994@foxmail.com>.
+<bishun1994@foxmail.com> and cc to <liyunmei@njnu.edu.cn>.
 
 ## Installation
 
@@ -73,9 +73,12 @@ res_3 = Check_base_info(res_2)
 res_4 = Check_geo_location(res_3)
 ```
 
-The above `Check functions` are merged to one main funciton which could
+The above `Check functions` are merged to one main function which could
 be more convenient for users. But it is okay if you want to check a
 specific item, such as `sheet name` or `sample id`.
+
+It is better to use `%>%` for these successional functions.
+`res = Check_sheet_name(fn) %>% Check_sample_id()`
 
 ``` r
 res = Check_format(fn)
@@ -93,3 +96,37 @@ res_5 = Check_param_quality(res_4) # coming soon
 res_6 = Check_spectra_quality(res_5) # coming soon
 res_7 = Quatliy_flag(res_6) # coming soon
 ```
+
+## Example
+
+### Check\_sheet\_name
+
+``` r
+fn = "/foo/bar/foobar.xlsx"
+tmp <- Check_sheet_name(fn, excel_option = "readxl")
+```
+
+The result is shown as follows:
+
+![ex1](./man/figures/Check_sheet_name_1.jpg)
+
+> These warning messages mean the colnames in \[base\] sheet has some
+> carriage returns or newlines. But this does not matter for the
+> follow-up process. Thus, the number of warnings is 1.
+
+### Check\_sample\_id
+
+``` r
+fn = "/foo/bar/foobar.xlsx"
+tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
+  Check_sample_id()
+```
+
+![ex2](./man/figures/Check_sample_id.jpg)
+
+> These messages mean that the first columns of head have been replaced
+> by `SampleID` for matching the \[base\] sheet. However, in the \[apc\]
+> sheet, several samples (masked) have been found in error SampleID
+> format. Check the raw excel file and try to re-submit! The final
+> message of `Sample ID status:` presents `Error` which means there is
+> unable to do the follow-up process.

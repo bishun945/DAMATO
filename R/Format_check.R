@@ -22,16 +22,18 @@ Check_spread_file <- function(fn){
 #' @importFrom stringr str_detect
 #' @importFrom cli cat_bullet
 #' @importFrom readxl excel_sheets read_excel
+#' @importFrom openxlsx read.xlsx
 #' @importFrom magrittr %>%
 #' @importFrom stringi stri_escape_unicode
 #' 
 #' @param fn fn
 #' @param dataset_format dataset_format (default as 1)
+#' @param excel_option Which package used for opening the spread: `readxl` or `openxlsx`
 #' @return List
 #' @export
 #' @encoding UTF-8
 #' 
-Check_sheet_name <- function(fn, dataset_format = 1){
+Check_sheet_name <- function(fn, dataset_format = 1, excel_option = "readxl"){
   
   cli_control("head", "Sheet name check")
   
@@ -46,8 +48,9 @@ Check_sheet_name <- function(fn, dataset_format = 1){
               c("Following sheets are found: ", paste(Sheets_found, collapse = " ")))
   
   if(dataset_format == 1){
-    Sheets_required <- c(stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570"),"1.Rrs","2.ap","3.aph","4.anap","5.aCDOM","6.apc")
-    general_name    <- c("base","Rrs","ap","aph","anap","aCDOM","apc")
+    Sheets_required <- c(stri_unescape_unicode("\\u57fa\\u672c\\u53c2\\u6570"),
+                         "1.Rrs", "2.ap", "3.aph", "4.anap", "5.aCDOM", "6.apc")
+    general_name    <- c("base", "Rrs", "ap", "aph", "anap", "aCDOM", "apc")
     base_colnames_type <- dataset_format_1$base_info[,"base_colnames_type"]
   }
   
@@ -56,20 +59,21 @@ Check_sheet_name <- function(fn, dataset_format = 1){
   Sheets_used <- NULL
   
   for(Sheet in Sheets_required){
-    w <- str_detect(Sheets_found, Sheet)
+    w <- stringi::stri_detect_regex(Sheets_found, Sheet, case_insensitive = TRUE)
     if(!any(w)){
       cli_control("error", c("[", Sheet, "] does not detected!"))
       num_er = num_er + 1
-      next
+      stop()
     }
     if(sum(w) > 1){
       cli_control("error",
                   c(Sheet, " should be only one matched element! ",
                     "But [", paste(Sheets_found[w], collapse = " "), "] were found!"))
       num_er = num_er + 1
-      next
+      stop()
     }
-    Sheets_used <- c(Sheets_used, Sheet)
+    # Sheets_used <- c(Sheets_used, Sheet)
+    Sheets_used <- c(Sheets_used, Sheets_found[w])
   }
 
   cli_control("right",
@@ -84,7 +88,20 @@ Check_sheet_name <- function(fn, dataset_format = 1){
   #   }
   # }
   for(Sheet in Sheets_used){
-    dt[[Sheet]] <- read_excel(fn, sheet=Sheet)
+    
+    if(excel_option == "openxlsx") {
+      
+      dt[[Sheet]] <- openxlsx::read.xlsx(fn, sheet = Sheet)
+      
+    } else if(excel_option == "readxl") {
+      
+      dt[[Sheet]] <- readxl::read_excel(fn, sheet = Sheet)
+      
+    } else {
+      
+      stop("Error input `excel_option`! Use `openxlsx` or `readxl`")
+      
+    }
   }
   
   names(dt) <- general_name
@@ -93,9 +110,10 @@ Check_sheet_name <- function(fn, dataset_format = 1){
               c("To simplify the follow-up process, change the sheet name to: ", 
                 paste(general_name, collapse = " ")))
   
+  # To remove the return line of colnames
   if(any(str_detect(names(dt[['base']]), "\\r\\n"))){
     old_name <- names(dt[['base']])
-    names(dt[['base']]) <- names(dt[['base']]) %>% gsub("\\r\\n",'', .) # To remove the return line of colnames
+    names(dt[['base']]) <- names(dt[['base']]) %>% gsub("\\r\\n",'', .) 
     cli_control("warning",
                 c("We found carriage return or newline in the sheet [base]: ",
                   paste(names(dt[['base']])[which(str_detect(old_name ,"\\r\\n"))], collapse = " ")))
