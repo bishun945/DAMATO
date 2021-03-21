@@ -114,7 +114,7 @@ The result is shown as follows:
 > carriage returns or newlines. But this does not matter for the
 > follow-up process. Thus, the number of warnings is 1.
 
-### Check\_sample\_id
+### Check\_sample\_id - Error
 
 ``` r
 fn = "/foo/bar/foobar.xlsx"
@@ -130,3 +130,71 @@ tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
 > format. Check the raw excel file and try to re-submit! The final
 > message of `Sample ID status:` presents `Error` which means there is
 > unable to do the follow-up process.
+
+### Check\_sample\_id - Pass
+
+``` r
+fn = "/foo/bar/foobar_revised.xlsx"
+tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
+  Check_sample_id()
+```
+
+![ex3](./man/figures/Check_sample_id_pass.jpg)
+
+> Once you have revised those SampleID with inappropriate format, the
+> check function will return the `Pass` information which means you can
+> do next step now.
+
+### Check\_base\_info - Error
+
+``` r
+fn = "/foo/bar/foobar_revised.xlsx"
+tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
+  Check_sample_id() %>%
+  Check_base_info()
+```
+
+![ex4](./man/figures/Check_base_info_error.jpg) &gt; Okay, in this check
+result, you gonna find some interesting features that if colnames of the
+\[base\] sheet to be checked cannot match the designed format, i.e.,
+`dataset_format = 1`, then `Check_base_info` would return warnings and
+errors indicating which colnames could not be found or have possible
+matchings (by means of the fuzzy matching).
+
+It is recommended that you could manually inspect your spread and check
+the colnames in the \[base\] sheet following the guides/suggestions from
+`Try to find the matched pattern (just guess) ...`. If there are some
+required colnames but do not exsit in the current spread, just
+add/insert an empty column with those colnames.
+
+And don’t remember those are just guess ;)
+
+### Check\_base\_info - Pass
+
+``` r
+fn = "/foo/bar/foobar_revised_2.xlsx"
+tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
+  Check_sample_id() %>%
+  Check_base_info()
+```
+
+![ex5](./man/figures/Check_base_info_pass.jpg)
+
+> Boom! After your second revision, the format in this spread has been
+> passed now.
+
+### Return of `Check_*` functions
+
+Once you finish all format check functions, i.e., `Check_sheet_name`,
+`Check_sample_id`, and `Check_base_info`, the final result of those
+functions will return a list that includes many elements that could be
+further used by upcoming functions or features as well as your own
+decision.
+
+The `Status_*` in that list all present `Pass` which means the list has
+been checked by the three corresponding functions.
+
+The data.frame of this list, namely `dt`, is restored data from the
+spread in the filename `fn` but with formatted data.frame.
+
+![ex6](./man/figures/Check_return.jpg)
