@@ -107,6 +107,7 @@ Check_spectra_quality <- function(input){
 #' @importFrom ggplot2 ggplot geom_point geom_abline facet_wrap aes 
 #' @importFrom ggplot2 scale_x_log10 scale_y_log10 scale_color_viridis_c
 #' @importFrom reshape2 melt
+#' @noRd
 Rrs_and_Chla <- function(x) {
   
   stopifnot(
