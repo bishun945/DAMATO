@@ -21,7 +21,8 @@ Imports:
     plotly (>= 4.9.2.1),
     openxlsx (>= 4.1.4),
     magrittr (>= 1.5),
-    FCMm (>= 0.11.1)
+    FCMm (>= 0.11.1),
+    ggplot2
 Suggests: 
     knitr (>= 1.26),
     rmarkdown (>= 2.0)
@@ -29,5 +30,5 @@ Encoding: UTF-8
 LazyData: yes
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
-Remotes:  
+Remotes: 
     github::bishun945/FCMm

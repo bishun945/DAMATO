@@ -97,9 +97,28 @@ res_6 = Check_spectra_quality(res_5) # coming soon
 res_7 = Quatliy_flag(res_6) # coming soon
 ```
 
-## Example
+## Example steps by steps
+
+### First thing to do
+
+The first thing for DAMATO is creating a formatted spread if you have to
+type your paper records in PC. Try run the following function:
+
+``` r
+Generate_ref_spread()
+```
+
+Then you will get a supper cool, formatted, and version controlled
+spread in your current working directory named `spread`.
+
+Now let us type our valuable data in it.
 
 ### Check\_sheet\_name
+
+Once you have a spread need to be check, please use `Check_*` functions
+to check their format. Basically, if you have typed your data in the
+generated spread by running `Generate_ref_spread`, the format would be
+pretty well.
 
 ``` r
 fn = "/foo/bar/foobar.xlsx"

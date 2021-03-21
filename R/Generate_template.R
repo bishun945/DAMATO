@@ -1,11 +1,11 @@
 #' @name Generate_ref_spread
-#' @title Generate spreads of the built-in format (recommand)
+#' @title Generate spreads of the built-in format (recommend)
 #' @import openxlsx
 #' @param dataset_format dataset_format (default as 1)
 #' @param file_format file_format (default as 'xlsx')
 #' @param overwrite Default as \code{FALSE}, just in case you forget to copy demo spread to other folders.
 #' @param use_CN Use CN colnames (default as \code{TRUE})
-#' @param QF_sheet Qualtiy Flag sheets (default as \code{FALSE})
+#' @param QF_sheet Quality Flag sheets (default as \code{FALSE})
 #' @param Meta_sheet Metadata info sheets (default as \code{TRUE})
 #' @param add_demo Add demo samples (TRUE)
 #' @param add_unit Add unit (TRUE)

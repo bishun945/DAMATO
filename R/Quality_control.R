@@ -100,3 +100,65 @@ Check_spectra_quality <- function(input){
   return(NULL)
   
 }
+
+
+#' @import FCMm
+#' @importFrom dplyr full_join
+#' @importFrom ggplot2 ggplot geom_point geom_abline facet_wrap aes 
+#' @importFrom ggplot2 scale_x_log10 scale_y_log10 scale_color_viridis_c
+#' @importFrom reshape2 melt
+Rrs_and_Chla <- function(x) {
+  
+  stopifnot(
+    x$Status_base_info  == "Pass",
+    x$Status_sample_id  == "Pass", 
+    x$Status_sheet_name == "Pass"
+    )
+  
+  dt_base <- x$dt$base
+  dt_Rrs  <- x$dt$Rrs
+  
+  dt_Rrs_tmpp <- FCMm::SRF_simulate(dt_Rrs, 
+                                    select_sensor = "OLCI", 
+                                    input_wv_as_column = FALSE)
+  dt_Rrs_OLCI <- dt_Rrs_tmpp$OLCI$Rrs_simu %>%
+    as.data.frame() %>%
+    setNames(., dt_Rrs_tmpp$OLCI$cw_med)
+  
+  dt_Rrs_OLCI <- 
+    dt_Rrs_OLCI[, !(colnames(dt_Rrs_OLCI) %in% c(761, 764, 768, 900, 940, 1012))]
+  
+  
+  dt_Chla <- FCMm::Blend_FCMm(dt_Rrs_OLCI)
+  dt_Chla <- data.frame(
+    Blend_FCMm = dt_Chla$Chla_blend,
+    Blend_FCMm_r = dt_Chla$Chla_reparam,
+    dt_Chla$dt_Chla
+  )
+  rownames(dt_Chla) <- rownames(dt_Rrs_OLCI)
+  dt_Chla <- cbind(SampleID = rownames(dt_Chla), dt_Chla)
+  
+  dt_comp <- dplyr::full_join(dt_Chla, dt_base[, c("SampleID", "Chla")], by = "SampleID")
+  
+  p <- 
+    dt_comp %>%
+    reshape2::melt(id = c("SampleID", "Chla")) %>%
+    ggplot(aes(x = Chla, y = value, color = Chla)) + 
+    geom_point() + 
+    geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+    facet_wrap(~variable) + 
+    scale_x_log10(limits = range(dt_comp$Chla, na.rm = TRUE) * c(0.9, 1.1)) + 
+    scale_y_log10(limits = range(dt_comp$Chla, na.rm = TRUE) * c(0.9, 1.1)) + 
+    scale_color_viridis_c(trans = "log10")
+  
+  return(list(
+    dt_Chla = dt_comp,
+    p_Chla = p
+  ))
+  
+}
+
+
+
+
+

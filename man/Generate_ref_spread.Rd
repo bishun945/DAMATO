@@ -2,7 +2,7 @@
 % Please edit documentation in R/Generate_template.R
 \name{Generate_ref_spread}
 \alias{Generate_ref_spread}
-\title{Generate spreads of the built-in format (recommand)}
+\title{Generate spreads of the built-in format (recommend)}
 \usage{
 Generate_ref_spread(
   dataset_format = 1,
@@ -24,7 +24,7 @@ Generate_ref_spread(
 
 \item{use_CN}{Use CN colnames (default as \code{TRUE})}
 
-\item{QF_sheet}{Qualtiy Flag sheets (default as \code{FALSE})}
+\item{QF_sheet}{Quality Flag sheets (default as \code{FALSE})}
 
 \item{Meta_sheet}{Metadata info sheets (default as \code{TRUE})}
 
@@ -36,5 +36,5 @@ Generate_ref_spread(
 List
 }
 \description{
-Generate spreads of the built-in format (recommand)
+Generate spreads of the built-in format (recommend)
 }
