@@ -22,7 +22,8 @@ Imports:
     openxlsx (>= 4.1.4),
     magrittr (>= 1.5),
     FCMm (>= 0.11.1),
-    ggplot2
+    ggplot2,
+    reshape2
 Suggests: 
     knitr (>= 1.26),
     rmarkdown (>= 2.0)
