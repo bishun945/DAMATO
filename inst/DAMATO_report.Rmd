@@ -1,0 +1,61 @@
+---
+title: "DAMATO_report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	echo = FALSE,
+	fig.width = 4,
+	fig.height = 3,
+	fig.align = 'center',
+	comment = NA
+)
+```
+
+
+```{r}
+# <--input_file-->
+load("<replaceme>")
+```
+
+# 基本参数测量结果
+
+```{r}
+dt_base <- tmp$dt$base
+```
+
+## 叶绿素a浓度
+
+```{r}
+hist(dt_base$Chla, xlab = "Chla", main = NULL)
+```
+
+## SSD
+
+```{r}
+hist(dt_base$SSD, xlab = "SSD", main = NULL)
+```
+
+
+# 光谱测量结果
+
+
+```{r}
+library(dplyr)
+dt_Rrs <- tmp$dt$Rrs %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(., as.numeric(.[1, ])) %>%
+  .[-1, ] %>%
+  .[, dplyr::between(colnames(.), 400, 800)]
+
+FCMm::plot_spec_from_df(dt_Rrs) + 
+  ggplot2::labs(x = "Wavelength [nm]", y = "Rrs [1/sr]")
+  
+```
+
+
