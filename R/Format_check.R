@@ -459,7 +459,7 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
   result <- input
   result$dt$base <- dt_base
   result$Status_base_info = Status
-  result$dt$unit <- data.frame(name = name, unit = unit)
+  result$dt$unit <- data.frame(name = name, unit = unit, stringsAsFactors = FALSE)
   result$base_colnames_CN = base_colnames_CN
   result$base_colnames_EN = base_colnames_EN
   result$as_EN_colnames = as_EN_colnames

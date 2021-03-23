@@ -130,11 +130,11 @@ Rrs_and_Chla <- function(x) {
     dt_Rrs_OLCI[, !(colnames(dt_Rrs_OLCI) %in% c(761, 764, 768, 900, 940, 1012))]
   
   
-  dt_Chla <- FCMm::Blend_FCMm(dt_Rrs_OLCI)
+  Blend_result<- FCMm::Blend_FCMm(dt_Rrs_OLCI)
   dt_Chla <- data.frame(
-    Blend_FCMm = dt_Chla$Chla_blend,
-    Blend_FCMm_r = dt_Chla$Chla_reparam,
-    dt_Chla$dt_Chla
+    Blend_FCMm = Blend_result$Chla_blend,
+    Blend_FCMm_r = Blend_result$Chla_reparam,
+    Blend_result$dt_Chla
   )
   rownames(dt_Chla) <- rownames(dt_Rrs_OLCI)
   dt_Chla <- cbind(SampleID = rownames(dt_Chla), dt_Chla)
@@ -154,7 +154,8 @@ Rrs_and_Chla <- function(x) {
   
   return(list(
     dt_Chla = dt_comp,
-    p_Chla = p
+    p_Chla = p,
+    Blend_result = Blend_result
   ))
   
 }

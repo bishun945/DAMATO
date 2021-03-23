@@ -1,7 +1,7 @@
 ---
-title: "DAMATO_report"
+title: "Data Report"
+author: '`r sprintf("Provided by DAMATO v%s", packageVersion("DAMATO"))`'
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -22,40 +22,202 @@ knitr::opts_chunk$set(
 load("<replaceme>")
 ```
 
-# 基本参数测量结果
+```{r package require}
+if(!require(dplyr)) {
+  install.packages("dplyr")
+  library(dplyr)
+}
+
+if(!require(reshape2)) {
+  install.packages("reshape2")
+}
+
+if(!require(ggplot2)) {
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+
+if(!require(FCMm)) {
+  remotes::install_github("bishun945/FCMm")
+  library(FCMm)
+}
+
+theme_set(theme_bw())
+
+options(digits = 3)
+
+```
+
+# The description of [base] parameters
 
 ```{r}
 dt_base <- tmp$dt$base
+unit    <- tmp$dt$unit
+unit_char <- unit$unit %>% setNames(., unit$name)
 ```
 
-## 叶绿素a浓度
+## Water quality parameters
+
+### Chla
 
 ```{r}
-hist(dt_base$Chla, xlab = "Chla", main = NULL)
+dt_base %>% 
+  select(SampleID, SSD, Chla, PC, TSM, ISM, OSM, TN, TP) %>%
+  ggplot(aes(x=Chla, y = PC)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  labs(
+    x = sprintf("Chla %s", unit_char["chla"]),
+    y = sprintf("PC %s", unit_char["藻蓝蛋白"])
+  )
+
 ```
 
-## SSD
+叶绿素a共测量了`r length(dt_base$Chla)`个样本，均值为`r mean(dt_base$Chla, na.rm=TRUE)` `r unit_char["chla"]`，最小值为`r min(dt_base$Chla, na.rm=TRUE)` `r unit_char["chla"]`，最大值为`r max(dt_base$Chla, na.rm=TRUE)` `r unit_char["chla"]`，方差为`r sd(dt_base$Chla, na.rm=TRUE)` `r unit_char["chla"]`。
+
+### Table of parameters
 
 ```{r}
-hist(dt_base$SSD, xlab = "SSD", main = NULL)
+dt_base %>% 
+  dplyr::select(SSD, Chla, PC, TSM, ISM, OSM, TN, TP) %>%
+  apply(., 2, function(x) {
+    x <- na.omit(x)
+    c(min(x), max(x), mean(x), sd(x))
+  }) %>% 
+  t() %>% 
+  as.data.frame() %>%
+  cbind(Parm = rownames(.), .) %>%
+  setNames(., c("Parm", "min", "max", "mean", "sd")) %>%
+  knitr::kable(row.names = FALSE, format = "html")
 ```
 
 
-# 光谱测量结果
-
+### Suspended matter concentration
 
 ```{r}
-library(dplyr)
-dt_Rrs <- tmp$dt$Rrs %>%
+dt_base %>% 
+  select(SampleID, SSD, Chla, PC, TSM, ISM, OSM, TN, TP) %>%
+  ggplot(aes(x=TSM, y=ISM)) + 
+  geom_point() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  labs(
+    x = sprintf("TSM %s", unit_char["TSM"]),
+    y = sprintf("ISM %s", unit_char["ISM"])
+  )
+```
+
+```{r}
+dt_base %>% 
+  select(SampleID, SSD, Chla, PC, TSM, ISM, OSM, TN, TP) %>%
+  ggplot(aes(x=TSM, y=SSD)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  labs(
+    x = sprintf("TSM %s", unit_char["TSM"]),
+    y = sprintf("SSD %s", unit_char["透明度"])
+  )
+```
+
+
+
+# Spectral analysis
+
+### Rrs colored by Chla
+
+```{r}
+tmp$dt$Rrs %>%
   t() %>%
   as.data.frame() %>%
   setNames(., as.numeric(.[1, ])) %>%
   .[-1, ] %>%
-  .[, dplyr::between(colnames(.), 400, 800)]
-
-FCMm::plot_spec_from_df(dt_Rrs) + 
-  ggplot2::labs(x = "Wavelength [nm]", y = "Rrs [1/sr]")
-  
+  .[, dplyr::between(colnames(.), 400, 800)] %>%
+  cbind(SampleID = rownames(.), .) %>%
+  dplyr::mutate(SampleID = as.vector(SampleID)) %>%
+  dplyr::left_join(., dt_base[, c("SampleID", "Chla")], by = "SampleID") %>%
+  reshape2::melt(id = c("SampleID", "Chla")) %>%
+  dplyr::mutate(variable = as.vector(variable) %>% as.numeric()) %>%
+  ggplot(aes(x = variable, y = value, group = SampleID, color = Chla)) +
+  geom_path() + 
+  scale_color_viridis_c(trans = "log10") + 
+  labs(x = "Wavelength [nm]", y = "Rrs [1/sr]")
 ```
+
+### Rrs colored by TSM
+
+```{r}
+tmp$dt$Rrs %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(., as.numeric(.[1, ])) %>%
+  .[-1, ] %>%
+  .[, dplyr::between(colnames(.), 400, 800)] %>%
+  cbind(SampleID = rownames(.), .) %>%
+  dplyr::mutate(SampleID = as.vector(SampleID)) %>%
+  dplyr::left_join(., dt_base[, c("SampleID", "TSM")], by = "SampleID") %>%
+  reshape2::melt(id = c("SampleID", "TSM")) %>%
+  dplyr::mutate(variable = as.vector(variable) %>% as.numeric()) %>%
+  ggplot(aes(x = variable, y = value, group = SampleID, color = TSM)) +
+  geom_path() + 
+  scale_color_viridis_c(trans = "log10") + 
+  labs(x = "Wavelength [nm]", y = "Rrs [1/sr]")
+```
+
+```{r}
+Blend_result <- DAMATO:::Rrs_and_Chla(tmp)
+```
+
+### OWT results
+
+```{r fig.width=4.5}
+cluster <- Blend_result$Blend_result$res_FCM$cluster
+tmp$dt$Rrs %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(., as.numeric(.[1, ])) %>%
+  .[-1, ] %>%
+  .[, dplyr::between(colnames(.), 400, 800)] %>%
+  FCMm::plot_spec_group(., cluster) + 
+  labs(x = "Wavelength [nm]", y = "Rrs [1/sr]", color = "OWT")
+
+tmp$dt$Rrs %>%
+  t() %>%
+  as.data.frame() %>%
+  setNames(., as.numeric(.[1, ])) %>%
+  .[-1, ] %>%
+  .[, dplyr::between(colnames(.), 400, 800)] %>%
+  {./trapz2(.)} %>%
+  FCMm::plot_spec_group(., cluster) + 
+  labs(x = "Wavelength [nm]", y = "Normalized Rrs", color = "OWT")
+
+```
+
+
+### Blending Chla result
+
+```{r fig.width=6.5, fig.height=5}
+Blend_result$p_Chla + 
+  labs(
+    x = sprintf("Measured Chla %s", unit_char["chla"]),
+    y = sprintf("Predicted Chla %s", unit_char["chla"])
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -2,7 +2,8 @@
 
 dataset_format_1 <- list()
 
-dataset_format_1$base_info <- cbind(
+dataset_format_1$base_info <- data.frame(
+  stringsAsFactors = FALSE,
   base_colnames_CN = c('通用编号', '测量日期', '测量时间', '经度', '纬度', '采水深度', '是否垂向',
                        '天气状况', '云量状况', '大气能见度', '风向', 'pH', 'Eh', 'DO', '海拔', '气压', 
                        '空气温度', '相对湿度', '风速', '水深', '水温', '水表温', '透明度', '叶绿素a', 
@@ -52,6 +53,7 @@ dataset_format_1$sheets_info <- cbind(
 
 today <- as.character(Sys.Date())
 demo_samples <- data.frame(
+  stringsAsFactors = FALSE,
   `通用编号` = c('1_1', '1_2', '1_3', '2_1', '2_2', '2_3', '4_1', '5_1') ,
   `测量日期[年月日]` = c(today, 'NA', 'NA', today, 'NA', 'NA', today, today) ,
   `测量时间[时分]` = c('10:30:00', '10:30:00', '10:30:00', '11:30:00', '11:30:00', '11:30:00', '13:00:00', '13:30:00') ,

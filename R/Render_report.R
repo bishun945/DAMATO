@@ -1,5 +1,17 @@
-
-render_report <- function(input, RMD = NULL, ...) {
+#' @name render_report
+#' @title render_report
+#' @description render_report
+#' @param input Input list
+#' @param RMD RMD file path
+#' @param output_format Param in rmarkdown::render, try \code{"html_document"},
+#'   \code{"rmdformats::readthedown"}, \code{"pagedown::html_paged"}, or 
+#'   \code{"slidy_presentation"}.
+#' @param ... ...
+#' @export
+render_report <- function(input, 
+                          RMD = NULL,
+                          output_format = NULL,
+                          ...) {
   
   if(is.null(RMD)) {
     
@@ -31,12 +43,19 @@ render_report <- function(input, RMD = NULL, ...) {
   
   
   # render it 
-  rmarkdown::render(input = tmpRMD, ...)
+  if(is.null(output_format)) {
+    output_format = "html_document"
+  }
+  
+  rmarkdown::render(input = tmpRMD, 
+                    output_format = output_format, 
+                    quiet = TRUE,
+                    ...)
   
   # find it in tmpdir and copy to the wd if exists
   if(file.exists(tmpHTML)) {
     
-    tmp = file.copy(tmpHTML, "./DMATO_report.html")
+    tmp = file.copy(tmpHTML, "./DMATO_report.html", overwrite = TRUE)
     
   }
   
