@@ -1,7 +1,7 @@
 Package: DAMATO
 Type: Package
 Title: Data Management Tools
-Version: 0.0.7
+Version: 0.0.8
 Authors@R: c(person("Shun", "Bi", ,"bishun1994@foxmail.com", c("aut","cre")))
 Author: Shun Bi [aut, cre]
 Maintainer: Shun Bi <bishun1994@foxmail.com>
