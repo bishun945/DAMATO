@@ -3,7 +3,7 @@
 
 # DAMATO <img src='man/figures/logo.png' align="right" height="139" />
 
-Current version: 0.0.7
+Current version: 0.0.8
 
 <!-- badges: start -->
 
@@ -23,11 +23,11 @@ binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/bishun9
 The goal of `DAMATO` is to automatically assess the MS spreadsheets
 recording in situ data by:
 
--   **Format check** includes sheetname check, sampleID check, base info
+  - **Format check** includes sheetname check, sampleID check, base info
     check, etc.;
--   **Generate a skeleton** by the pre-defined spreadsheet format (easy
+  - **Generate a skeleton** by the pre-defined spreadsheet format (easy
     to use when start to data collection);
--   **Produce assessment figures** includes parameters comparison,
+  - **Produce assessment figures** includes parameters comparison,
     relationships between AOPs (or IOPs) and OACs, geolocation map and
     so on.
 
@@ -43,7 +43,7 @@ Github](https://github.com/bishun945/DAMATO) with:
 
 ``` r
 install.packages("devtools") # install devtools require
-devtools::install_github('DAMATO', build_vignettes=TRUE)
+devtools::install_github('DAMATO')
 ```
 
 ## Supported spread formats
@@ -66,6 +66,7 @@ working directory. Just add your records to this file. Once you finish
 your collection, use `Check functions` to make sure the format is okay.
 
 ``` r
+
 fn  = file.choose() # select your spreadsheet file
 res_1 = Check_sheet_name(fn)
 res_2 = Check_sample_id(res_1)
@@ -77,8 +78,8 @@ The above `Check functions` are merged to one main function which could
 be more convenient for users. But it is okay if you want to check a
 specific item, such as `sheet name` or `sample id`.
 
-It is better to use `%>%` for these successional functions.
-`res = Check_sheet_name(fn) %>% Check_sample_id()`
+It is better to use `%>%` for these successional functions. `res =
+Check_sheet_name(fn) %>% Check_sample_id()`
 
 ``` r
 res = Check_format(fn)
@@ -146,7 +147,7 @@ tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
 > These messages mean that the first columns of head have been replaced
 > by `SampleID` for matching the \[base\] sheet. However, in the \[apc\]
 > sheet, several samples (masked) have been found in error SampleID
-> format. Check the raw excel file and try to re-submit! The final
+> format. Check the raw excel file and try to re-submit\! The final
 > message of `Sample ID status:` presents `Error` which means there is
 > unable to do the follow-up process.
 
@@ -173,7 +174,7 @@ tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
   Check_base_info()
 ```
 
-![ex4](./man/figures/Check_base_info_error.jpg) &gt; Okay, in this check
+![ex4](./man/figures/Check_base_info_error.jpg) \> Okay, in this check
 result, you gonna find some interesting features that if colnames of the
 \[base\] sheet to be checked cannot match the designed format, i.e.,
 `dataset_format = 1`, then `Check_base_info` would return warnings and
@@ -199,7 +200,7 @@ tmp <- Check_sheet_name(fn, excel_option = "readxl") %>%
 
 ![ex5](./man/figures/Check_base_info_pass.jpg)
 
-> Boom! After your second revision, the format in this spread has been
+> Boom\! After your second revision, the format in this spread has been
 > passed now.
 
 ### Return of `Check_*` functions
