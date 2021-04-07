@@ -14,6 +14,7 @@
 #' 
 #' @importFrom cli cat_bullet
 #' @importFrom stringr str_sub
+#' @importFrom utils packageVersion
 #' 
 Generate_ref_spread <- function(dataset_format = 1, 
                                 file_format = "xlsx", 
@@ -81,7 +82,7 @@ Generate_ref_spread <- function(dataset_format = 1,
   
   # add and write Meta info
   if(Meta_sheet){
-    pkg_version <- gsub("Version: ","",readLines('DESCRIPTION')[stringr::str_which(readLines('DESCRIPTION'), 'Version')])
+    pkg_version <- packageVersion("DAMATO")
     pkg_version <- str_c("DAMATO v", pkg_version, " by Shun Bi")
     dt_meta <- data.frame(
       Item = c("Filename","Data_Collect_Date","File_Create_Date","Maintainer(s)","Package_Version","Notes"),
