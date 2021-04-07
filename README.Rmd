@@ -40,7 +40,7 @@ You can install the released version of DAMATO from [My Github](https://github.c
 
 ``` r
 install.packages("devtools") # install devtools require
-devtools::install_github('DAMATO')
+devtools::install_github('bishun945/DAMATO')
 ```
 
 ## Supported spread formats

@@ -43,7 +43,7 @@ Github](https://github.com/bishun945/DAMATO) with:
 
 ``` r
 install.packages("devtools") # install devtools require
-devtools::install_github('DAMATO')
+devtools::install_github('bishun945/DAMATO')
 ```
 
 ## Supported spread formats
