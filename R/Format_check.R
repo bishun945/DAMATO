@@ -374,7 +374,7 @@ Check_base_info <- function(input, dataset_format = 1, as_EN_colnames = TRUE){
     w = which(!w)
     cli_control("error",c(
       paste(name[w], collapse = ", "), " found in the current spread. ",
-      "They are not required colnames. If you want to save them, just keep them into the column Note. ",
+      "They are not required colnames. If you want to save them, just keep them into a new sheet. ",
       "Or if you confirm these parameters as the often-used. Please contact me to modify the code. ", 
       "Now please check and re-submit!"
     ))
